@@ -4,21 +4,24 @@ package beebui
 import (
 	"bufio"
 	"fmt"
-	"github.com/andydotxyz/gobasic/builtin"
-	"github.com/andydotxyz/gobasic/object"
 	"image/color"
 	"time"
 
 	"fyne.io/fyne"
 	"fyne.io/fyne/canvas"
 
+	"github.com/andydotxyz/gobasic/builtin"
 	"github.com/andydotxyz/gobasic/eval"
+	"github.com/andydotxyz/gobasic/object"
 	"github.com/andydotxyz/gobasic/tokenizer"
 )
 
 const (
 	screenInsetX = 130
 	screenInsetY = 62
+
+	screenLines = 25
+	screenCols  = 40
 )
 
 var screenSize = fyne.Size{800, 600}
@@ -43,7 +46,7 @@ func (b *beeb) Layout(_ []fyne.CanvasObject, size fyne.Size) {
 	b.overlay.Resize(size)
 
 	y := screenInsetY
-	for i := 0; i < 25; i++ {
+	for i := 0; i < screenLines; i++ {
 		b.content[i].Move(fyne.NewPos(screenInsetX, y))
 		b.content[i].Resize(fyne.NewSize(size.Width-screenInsetX*2, 18))
 		y += 19
@@ -51,9 +54,9 @@ func (b *beeb) Layout(_ []fyne.CanvasObject, size fyne.Size) {
 }
 
 func (b *beeb) loadUI() fyne.CanvasObject {
-	b.content = make([]fyne.CanvasObject, 25)
+	b.content = make([]fyne.CanvasObject, screenLines)
 
-	for i := 0; i < 25; i++ {
+	for i := 0; i < screenLines; i++ {
 		b.content[i] = canvas.NewText("", color.RGBA{0xbb, 0xbb, 0xbb, 0xff})
 		b.content[i].(*canvas.Text).TextSize = 15
 		b.content[i].(*canvas.Text).TextStyle.Monospace = true
@@ -73,9 +76,8 @@ func (b *beeb) appendLine(line string) {
 		}
 	}
 
-	if b.current >= 25-1 {
-		fmt.Println("TODO implement scroll")
-		return
+	if b.current == screenLines-1 {
+		b.scroll()
 	}
 	b.current++
 	text := b.content[b.current].(*canvas.Text)
@@ -123,6 +125,22 @@ func (b *beeb) CLS(env builtin.Environment, args []object.Object) object.Object 
 	return &object.NumberObject{Value: 0}
 }
 
+func (b *beeb) scroll() {
+	for i := 0; i < len(b.content)-1; i++ {
+		text1 := b.content[i].(*canvas.Text)
+		text2 := b.content[i+1].(*canvas.Text)
+		text1.Text = text2.Text
+
+		canvas.Refresh(text1)
+	}
+
+	text := b.content[len(b.content)-1].(*canvas.Text)
+	text.Text = ""
+	canvas.Refresh(text)
+
+	b.current -= 1
+}
+
 func (b *beeb) onRune(r rune) {
 	b.append(string(r))
 }
@@ -137,7 +155,7 @@ func (b *beeb) onKey(ev *fyne.KeyEvent) {
 		prog := text + "\n"
 		t := tokenizer.New(prog)
 		e, err := eval.New(t)
-		e.STDOUT = bufio.NewWriterSize(b, 40)
+		e.STDOUT = bufio.NewWriterSize(b, screenCols)
 		e.RegisterBuiltin("CLS", 0, b.CLS)
 		if err != nil {
 			fmt.Println("Error parsing program", err)
