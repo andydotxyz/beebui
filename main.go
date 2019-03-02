@@ -126,7 +126,11 @@ func (b *beeb) onRune(r rune) {
 func (b *beeb) onKey(ev *fyne.KeyEvent) {
 	switch ev.Name {
 	case fyne.KeyReturn:
-		prog := b.content[b.current].(*canvas.Text).Text[1:]+"\n"
+		text := b.content[b.current].(*canvas.Text).Text[1:]
+		if len(text) > 0 && text[len(text)-1] == '_' {
+			text = text[:len(text)-1]
+		}
+		prog := text + "\n"
 		t := tokenizer.New(prog)
 		e, err := eval.New(t)
 		e.STDOUT = bufio.NewWriterSize(b, 40)
@@ -140,6 +144,16 @@ func (b *beeb) onKey(ev *fyne.KeyEvent) {
 			}
 		}
 		b.appendLine(">")
+	case fyne.KeyBackspace:
+		line := b.content[b.current].(*canvas.Text)
+		text := line.Text[1:]
+		if len(text) > 0 && text[len(text)-1] == '_' {
+			text = text[:len(text)-1]
+		}
+		if len(text) > 0 {
+			line.Text = ">" + text[:len(text)-1]
+			canvas.Refresh(line)
+		}
 	}
 }
 
