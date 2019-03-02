@@ -4,6 +4,8 @@ package beebui
 import (
 	"bufio"
 	"fmt"
+	"github.com/andydotxyz/gobasic/builtin"
+	"github.com/andydotxyz/gobasic/object"
 	"image/color"
 	"time"
 
@@ -28,7 +30,8 @@ type beeb struct {
 }
 
 func (b *beeb) Write(p []byte) (n int, err error) {
-	b.appendLine(string(p))
+	str := string(p)
+	b.appendLine(str[:len(str)-1])
 	return len(p), nil
 }
 
@@ -105,6 +108,17 @@ func (b *beeb) blink() {
 	}
 }
 
+func (b *beeb) CLS(env builtin.Environment, args []object.Object) object.Object {
+	for i := 0; i < len(b.content); i++ {
+		text := b.content[i].(*canvas.Text)
+		text.Text = ""
+		canvas.Refresh(text)
+	}
+	b.current = -1
+
+	return &object.NumberObject{Value: 0}
+}
+
 func (b *beeb) onRune(r rune) {
 	b.append(string(r))
 }
@@ -116,7 +130,7 @@ func (b *beeb) onKey(ev *fyne.KeyEvent) {
 		t := tokenizer.New(prog)
 		e, err := eval.New(t)
 		e.STDOUT = bufio.NewWriterSize(b, 40)
-//		e.RegisterBuiltin("CLS", 0, clear)
+		e.RegisterBuiltin("CLS", 0, b.CLS)
 		if err != nil {
 			fmt.Println("Error parsing program", err)
 		} else {
