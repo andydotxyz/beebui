@@ -73,6 +73,10 @@ func (b *beeb) appendLine(line string) {
 		}
 	}
 
+	if b.current >= 25-1 {
+		fmt.Println("TODO implement scroll")
+		return
+	}
 	b.current++
 	text := b.content[b.current].(*canvas.Text)
 	text.Text = line
@@ -93,7 +97,7 @@ func (b *beeb) append(line string) {
 
 func (b *beeb) blink() {
 	for {
-		time.Sleep(time.Second/2)
+		time.Sleep(time.Second / 2)
 		line := b.content[b.current].(*canvas.Text)
 
 		if line.Text == "" {
