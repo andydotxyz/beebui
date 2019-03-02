@@ -1,9 +1,11 @@
 # beebUI
 A BBC Micro Emulator based on Fyne and skx/gobasic
 
-## TODO - almost everything
+## TODO
 
-This is the beginning of a fun project, but only the rendering is ready for sharing"
+* Program mode (currently it only operates in "command mode" - each line executes)
+* Scroll (when input hits the bottom of the screen)
+* Line wrap (what does the Beeb do here?)
 
 ## Features
 
