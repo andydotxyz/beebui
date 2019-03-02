@@ -2,6 +2,7 @@
 package beebui
 
 import (
+	"bufio"
 	"fmt"
 	"image/color"
 	"time"
@@ -9,8 +10,8 @@ import (
 	"fyne.io/fyne"
 	"fyne.io/fyne/canvas"
 
-	"github.com/skx/gobasic/tokenizer"
-	"github.com/skx/gobasic/eval"
+	"github.com/andydotxyz/gobasic/eval"
+	"github.com/andydotxyz/gobasic/tokenizer"
 )
 
 const (
@@ -24,6 +25,11 @@ type beeb struct {
 	content []fyne.CanvasObject
 	overlay *canvas.Image
 	current int
+}
+
+func (b *beeb) Write(p []byte) (n int, err error) {
+	b.appendLine(string(p))
+	return len(p), nil
 }
 
 func (b *beeb) MinSize(_ []fyne.CanvasObject) fyne.Size {
@@ -109,6 +115,7 @@ func (b *beeb) onKey(ev *fyne.KeyEvent) {
 		prog := b.content[b.current].(*canvas.Text).Text[1:]+"\n"
 		t := tokenizer.New(prog)
 		e, err := eval.New(t)
+		e.STDOUT = bufio.NewWriterSize(b, 40)
 //		e.RegisterBuiltin("CLS", 0, clear)
 		if err != nil {
 			fmt.Println("Error parsing program", err)
