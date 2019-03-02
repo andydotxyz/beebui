@@ -3,7 +3,8 @@ A BBC Micro Emulator based on Fyne and skx/gobasic
 
 ## TODO
 
-* Program mode (currently it only operates in "command mode" - each line executes)
+* Input from the screen
+* Print errors to screen
 * Line wrap (what does the Beeb do here?)
 
 ## Features

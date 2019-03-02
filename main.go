@@ -32,6 +32,8 @@ type beeb struct {
 	content []fyne.CanvasObject
 	overlay *canvas.Image
 	current int
+
+	program string
 }
 
 func (b *beeb) Write(p []byte) (n int, err error) {
@@ -154,18 +156,16 @@ func (b *beeb) onKey(ev *fyne.KeyEvent) {
 		if len(text) > 0 && text[len(text)-1] == '_' {
 			text = text[:len(text)-1]
 		}
-		prog := text + "\n"
-		t := tokenizer.New(prog)
-		e, err := eval.New(t)
-		e.STDOUT = bufio.NewWriterSize(b, screenCols)
-		e.RegisterBuiltin("CLS", 0, b.CLS)
-		if err != nil {
-			fmt.Println("Error parsing program", err)
+		prog := strings.TrimSpace(text) + "\n"
+
+		first := prog[0]
+		if first >= '0' && first <= '9' {
+			b.program += prog
+		} else if prog == "RUN\n" {
+			b.runProg(b.program)
+			b.program = ""
 		} else {
-			err = e.Run()
-			if err != nil {
-				fmt.Println("Error running program", err)
-			}
+			b.runProg(prog)
 		}
 		b.appendLine(">")
 	case fyne.KeyBackspace:
@@ -177,6 +177,21 @@ func (b *beeb) onKey(ev *fyne.KeyEvent) {
 		if len(text) > 0 {
 			line.Text = ">" + text[:len(text)-1]
 			canvas.Refresh(line)
+		}
+	}
+}
+
+func (b *beeb) runProg(prog string) {
+	t := tokenizer.New(prog)
+	e, err := eval.New(t)
+	e.STDOUT = bufio.NewWriterSize(b, screenCols)
+	e.RegisterBuiltin("CLS", 0, b.CLS)
+	if err != nil {
+		fmt.Println("Error parsing program", err)
+	} else {
+		err = e.Run()
+		if err != nil {
+			fmt.Println("Error running program", err)
 		}
 	}
 }
