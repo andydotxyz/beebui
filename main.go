@@ -5,6 +5,8 @@ import (
 	"bufio"
 	"fmt"
 	"image/color"
+	"runtime"
+	"strings"
 	"time"
 
 	"fyne.io/fyne"
@@ -194,9 +196,11 @@ func Show(app fyne.App) {
 	window.Canvas().SetOnTypedRune(b.onRune)
 	window.Canvas().SetOnTypedKey(b.onKey)
 
-	b.appendLine("BBC Computer 16K")
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	b.appendLine(fmt.Sprintf("BBC Computer %dK", int(m.HeapSys/1024)))
 	b.appendLine("")
-	b.appendLine("Acorn DFS")
+	b.appendLine(strings.Title(runtime.GOOS) + " DFS")
 	b.appendLine("")
 	b.appendLine("BASIC")
 	b.appendLine("")
