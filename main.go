@@ -12,9 +12,7 @@ import (
 	"fyne.io/fyne/canvas"
 	"fyne.io/fyne/driver/desktop"
 
-	"github.com/andydotxyz/gobasic/builtin"
 	"github.com/andydotxyz/gobasic/eval"
-	"github.com/andydotxyz/gobasic/object"
 	"github.com/andydotxyz/gobasic/tokenizer"
 )
 
@@ -120,17 +118,6 @@ func (b *beeb) blink() {
 	}
 }
 
-func (b *beeb) CLS(env builtin.Environment, args []object.Object) object.Object {
-	for i := 0; i < len(b.content); i++ {
-		text := b.content[i].(*canvas.Text)
-		text.Text = ""
-		canvas.Refresh(text)
-	}
-	b.current = -1
-
-	return &object.NumberObject{Value: 0}
-}
-
 func (b *beeb) scroll() {
 	for i := 0; i < len(b.content)-1; i++ {
 		text1 := b.content[i].(*canvas.Text)
@@ -164,9 +151,9 @@ func (b *beeb) onKey(ev *fyne.KeyEvent) {
 		if first >= '0' && first <= '9' {
 			b.program += prog
 		} else if prog == "RUN\n" {
-			b.runProg(b.program)
+			b.RUN()
 		} else if prog == "NEW\n" {
-			b.program = ""
+			b.NEW()
 		} else if prog == "LIST\n" {
 			b.LIST()
 		} else if prog == "QUIT\n" || prog == "EXIT\n" {
