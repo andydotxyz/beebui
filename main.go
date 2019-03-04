@@ -5,12 +5,12 @@ import (
 	"bufio"
 	"fmt"
 	"image/color"
-	"runtime"
 	"strings"
 	"time"
 
 	"fyne.io/fyne"
 	"fyne.io/fyne/canvas"
+	"fyne.io/fyne/driver/desktop"
 
 	"github.com/andydotxyz/gobasic/builtin"
 	"github.com/andydotxyz/gobasic/eval"
@@ -165,6 +165,8 @@ func (b *beeb) onKey(ev *fyne.KeyEvent) {
 			b.runProg(b.program)
 		} else if prog == "NEW\n" {
 			b.program = ""
+		} else if prog == "QUIT\n" || prog == "EXIT\n" {
+			b.QUIT(fyne.CurrentApp())
 		} else {
 			b.runProg(prog)
 		}
@@ -211,16 +213,18 @@ func Show(app fyne.App) {
 
 	window.Canvas().SetOnTypedRune(b.onRune)
 	window.Canvas().SetOnTypedKey(b.onKey)
+	window.Canvas().AddShortcut(&desktop.CustomShortcut{
+		Modifier: desktop.ControlModifier,
+		KeyName: fyne.KeyD,
+	}, func(fyne.Shortcut) {
+		b.append("QUIT")
+		b.appendLine("")
+		go func() {
+			b.QUIT(app)
+		}()
+	})
 
-	var m runtime.MemStats
-	runtime.ReadMemStats(&m)
-	b.appendLine(fmt.Sprintf("BBC Computer %dK", int(m.HeapSys/1024)))
-	b.appendLine("")
-	b.appendLine(strings.Title(runtime.GOOS) + " DFS")
-	b.appendLine("")
-	b.appendLine("BASIC")
-	b.appendLine("")
-	b.appendLine(">")
+	b.RESTART()
 
 	go b.blink()
 
