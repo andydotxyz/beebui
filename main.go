@@ -163,6 +163,7 @@ func (b *beeb) onKey(ev *fyne.KeyEvent) {
 			b.program += prog
 		} else if prog == "RUN\n" {
 			b.runProg(b.program)
+		} else if prog == "NEW\n" {
 			b.program = ""
 		} else {
 			b.runProg(prog)
