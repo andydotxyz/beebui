@@ -167,6 +167,8 @@ func (b *beeb) onKey(ev *fyne.KeyEvent) {
 			b.runProg(b.program)
 		} else if prog == "NEW\n" {
 			b.program = ""
+		} else if prog == "LIST\n" {
+			b.LIST()
 		} else if prog == "QUIT\n" || prog == "EXIT\n" {
 			b.QUIT(fyne.CurrentApp())
 		} else {

@@ -9,6 +9,16 @@ import (
 	"fyne.io/fyne"
 )
 
+func (b *beeb) LIST() {
+	lines := strings.Split(b.program, "\n")
+	for i, line := range lines {
+		if i == len(lines)-1 {
+			break
+		}
+		b.appendLine(line)
+	}
+}
+
 func (b *beeb) QUIT(app fyne.App) {
 	time.Sleep(lineDelay)
 	app.Quit()
