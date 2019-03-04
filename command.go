@@ -10,6 +10,7 @@ import (
 )
 
 func (b *beeb) QUIT(app fyne.App) {
+	time.Sleep(lineDelay)
 	app.Quit()
 }
 

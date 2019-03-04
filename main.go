@@ -27,6 +27,7 @@ const (
 )
 
 var screenSize = fyne.Size{800, 600}
+var lineDelay = time.Second / 10
 
 type beeb struct {
 	content []fyne.CanvasObject
@@ -71,6 +72,7 @@ func (b *beeb) loadUI() fyne.CanvasObject {
 }
 
 func (b *beeb) appendLine(line string) {
+	time.Sleep(lineDelay)
 	if b.current >= 0 {
 		text := b.content[b.current].(*canvas.Text)
 
