@@ -8,6 +8,7 @@ import (
 
 func main() {
 	app := app.New()
+	app.SetIcon(beebui.Icon)
 
 	beebui.Show(app)
 	app.Run()

@@ -24,8 +24,12 @@ const (
 	screenCols  = 40
 )
 
-var screenSize = fyne.Size{800, 600}
-var lineDelay = time.Second / 10
+var (
+	screenSize = fyne.Size{800, 600}
+	lineDelay = time.Second / 10
+
+	Icon = icon
+)
 
 type beeb struct {
 	content []fyne.CanvasObject

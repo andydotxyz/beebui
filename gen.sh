@@ -7,5 +7,6 @@ BIN=`go env GOPATH`/bin
 cd $DIR
 
 $BIN/fyne bundle -package beebui -name monitor monitor.png > $FILE
+$BIN/fyne bundle -package beebui -name icon -append icon.png >> $FILE
 
 $BIN/fyne bundle -package beebui -name font -append kongtext.ttf >> $FILE
