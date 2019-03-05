@@ -32,12 +32,35 @@ type beeb struct {
 	overlay *canvas.Image
 	current int
 
-	program string
+	program  string
+	bufInput []byte
+	endInput bool
+}
+
+func (b *beeb) Read(p []byte) (n int, err error) {
+	if b.endInput {
+		b.endInput = false
+		b.bufInput = nil
+		p[0] = '\n'
+		return 1, nil
+	}
+	b.bufInput = p
+
+	if p[0] != 0 {
+		return 1, nil
+	}
+
+	time.Sleep(lineDelay)
+	return 0, nil
 }
 
 func (b *beeb) Write(p []byte) (n int, err error) {
 	str := string(p)
-	b.appendLine(str[:len(str)-1])
+	if str[len(str)-1] == '\n' {
+		b.appendLine(str[:len(str)-1])
+	} else {
+		b.appendLine(str)
+	}
 	return len(p), nil
 }
 
@@ -135,10 +158,19 @@ func (b *beeb) scroll() {
 }
 
 func (b *beeb) onRune(r rune) {
+	if b.bufInput != nil {
+		b.bufInput[0] = byte(r) // TODO could we have typed another?
+	}
 	b.append(string(r))
 }
 
 func (b *beeb) onKey(ev *fyne.KeyEvent) {
+	if b.bufInput != nil {
+		if ev.Name == fyne.KeyReturn {
+			b.endInput = true
+		}
+		return
+	}
 	switch ev.Name {
 	case fyne.KeyReturn:
 		text := b.content[b.current].(*canvas.Text).Text[1:]
@@ -179,6 +211,7 @@ func (b *beeb) runProg(prog string) {
 	t := tokenizer.New(prog)
 	e, err := eval.New(t)
 	e.STDOUT = bufio.NewWriterSize(b, screenCols)
+	e.STDIN = bufio.NewReaderSize(b, screenCols)
 	e.RegisterBuiltin("CLS", 0, b.CLS)
 	if err != nil {
 		fmt.Println("Error parsing program", err)
