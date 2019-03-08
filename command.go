@@ -18,7 +18,7 @@ func (b *beeb) CLS(env builtin.Environment, args []object.Object) object.Object 
 		text.Text = ""
 		canvas.Refresh(text)
 	}
-	b.current = -1
+	b.current = 0
 
 	return &object.NumberObject{Value: 0}
 }
@@ -44,6 +44,7 @@ func (b *beeb) QUIT(app fyne.App) {
 
 func (b *beeb) RESTART() {
 	b.NEW()
+	b.CLS(nil, nil)
 
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
@@ -53,7 +54,7 @@ func (b *beeb) RESTART() {
 	b.appendLine("")
 	b.appendLine("BASIC")
 	b.appendLine("")
-	b.appendLine(">")
+	b.append(">")
 }
 
 func (b *beeb) RUN() {

@@ -63,7 +63,7 @@ func (b *beeb) Write(p []byte) (n int, err error) {
 	if str[len(str)-1] == '\n' {
 		b.appendLine(str[:len(str)-1])
 	} else {
-		b.appendLine(str)
+		b.append(str)
 	}
 	return len(p), nil
 }
@@ -97,24 +97,24 @@ func (b *beeb) loadUI() fyne.CanvasObject {
 }
 
 func (b *beeb) appendLine(line string) {
-	time.Sleep(lineDelay)
-	if b.current >= 0 {
-		text := b.content[b.current].(*canvas.Text)
+	b.append(line)
 
-		if len(text.Text) > 0 && text.Text[len(text.Text)-1] == '_' {
-			text.Text = text.Text[:len(text.Text)-1]
-			canvas.Refresh(text)
-		}
+	b.newLine()
+}
+
+func (b *beeb) newLine() {
+	time.Sleep(lineDelay)
+	text := b.content[b.current].(*canvas.Text)
+
+	if len(text.Text) > 0 && text.Text[len(text.Text)-1] == '_' {
+		text.Text = text.Text[:len(text.Text)-1]
+		canvas.Refresh(text)
 	}
 
 	if b.current == screenLines-1 {
 		b.scroll()
 	}
 	b.current++
-	text := b.content[b.current].(*canvas.Text)
-	text.Text = line
-
-	canvas.Refresh(text)
 }
 
 func (b *beeb) append(line string) {
@@ -177,12 +177,16 @@ func (b *beeb) onKey(ev *fyne.KeyEvent) {
 	}
 	switch ev.Name {
 	case fyne.KeyReturn:
-		text := b.content[b.current].(*canvas.Text).Text[1:]
-		if len(text) > 0 && text[len(text)-1] == '_' {
-			text = text[:len(text)-1]
+		prog := ">"
+		text := b.content[b.current].(*canvas.Text).Text
+		if len(text) > 1 {
+			text = text[1:]
+			if len(text) > 0 && text[len(text)-1] == '_' {
+				text = text[:len(text)-1]
+			}
+			prog = strings.TrimSpace(text) + "\n"
 		}
-		prog := strings.TrimSpace(text) + "\n"
-
+		b.appendLine("")
 		first := prog[0]
 		if first >= '0' && first <= '9' {
 			b.program += prog
@@ -197,7 +201,7 @@ func (b *beeb) onKey(ev *fyne.KeyEvent) {
 		} else {
 			b.runProg(prog)
 		}
-		b.appendLine(">")
+		b.append(">")
 	case fyne.KeyBackspace:
 		line := b.content[b.current].(*canvas.Text)
 		text := line.Text[1:]
@@ -214,8 +218,10 @@ func (b *beeb) onKey(ev *fyne.KeyEvent) {
 func (b *beeb) runProg(prog string) {
 	t := tokenizer.New(prog)
 	e, err := eval.New(t)
-	e.STDOUT = bufio.NewWriterSize(b, screenCols)
 	e.STDIN = bufio.NewReaderSize(b, screenCols)
+	e.STDOUT = bufio.NewWriterSize(b, screenCols)
+	e.STDERR = e.STDOUT
+	e.LINEEND = "\n"
 	e.RegisterBuiltin("CLS", 0, b.CLS)
 	if err != nil {
 		fmt.Println("Error parsing program", err)
@@ -230,7 +236,6 @@ func (b *beeb) runProg(prog string) {
 // Show starts a new beeb computer simulator
 func Show(app fyne.App) {
 	b := beeb{}
-	b.current = -1
 	app.Settings().SetTheme(&beebTheme{})
 
 	window := app.NewWindow("BBC Emulator")
