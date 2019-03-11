@@ -190,16 +190,20 @@ func (b *beeb) onKey(ev *fyne.KeyEvent) {
 		first := prog[0]
 		if first >= '0' && first <= '9' {
 			b.program += prog
-		} else if prog == "RUN\n" {
-			b.RUN()
-		} else if prog == "NEW\n" {
-			b.NEW()
-		} else if prog == "LIST\n" {
-			b.LIST()
-		} else if prog == "QUIT\n" || prog == "EXIT\n" {
-			b.QUIT(fyne.CurrentApp())
 		} else {
-			b.runProg(prog)
+			// commands that can't be called from within a program
+			cmd := strings.ToUpper(prog[:len(prog)-1])
+			if cmd == "RUN" {
+				b.RUN()
+			} else if cmd == "NEW" {
+				b.NEW()
+			} else if cmd == "LIST" {
+				b.LIST()
+			} else if cmd == "QUIT" || cmd == "EXIT" {
+				b.QUIT(fyne.CurrentApp())
+			} else {
+				b.runProg(prog)
+			}
 		}
 		b.append(">")
 	case fyne.KeyBackspace:
