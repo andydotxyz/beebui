@@ -8,8 +8,9 @@ import (
 
 	"fyne.io/fyne"
 	"fyne.io/fyne/canvas"
-	"github.com/andydotxyz/gobasic/builtin"
-	"github.com/andydotxyz/gobasic/object"
+
+	"github.com/skx/gobasic/builtin"
+	"github.com/skx/gobasic/object"
 )
 
 func (b *beeb) CLS(env builtin.Environment, args []object.Object) object.Object {

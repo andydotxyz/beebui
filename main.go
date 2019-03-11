@@ -12,8 +12,8 @@ import (
 	"fyne.io/fyne/canvas"
 	"fyne.io/fyne/driver/desktop"
 
-	"github.com/andydotxyz/gobasic/eval"
-	"github.com/andydotxyz/gobasic/tokenizer"
+	"github.com/skx/gobasic/eval"
+	"github.com/skx/gobasic/tokenizer"
 )
 
 const (
