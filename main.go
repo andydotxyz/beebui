@@ -39,6 +39,7 @@ type beeb struct {
 	program  string
 	bufInput []byte
 	endInput bool
+	nextAuto int
 }
 
 func (b *beeb) Read(p []byte) (n int, err error) {
@@ -193,7 +194,9 @@ func (b *beeb) onKey(ev *fyne.KeyEvent) {
 		} else {
 			// commands that can't be called from within a program
 			cmd := strings.ToUpper(prog[:len(prog)-1])
-			if cmd == "RUN" {
+			if cmd == "AUTO" {
+				b.nextAuto = 10
+			} else if cmd == "RUN" {
 				b.RUN()
 			} else if cmd == "NEW" {
 				b.NEW()
@@ -206,6 +209,10 @@ func (b *beeb) onKey(ev *fyne.KeyEvent) {
 			}
 		}
 		b.append(">")
+		if b.nextAuto > 0 {
+			b.append(fmt.Sprintf("%d ", b.nextAuto))
+			b.nextAuto += 10
+		}
 	case fyne.KeyBackspace:
 		line := b.content[b.current].(*canvas.Text)
 		text := line.Text[1:]
@@ -216,6 +223,15 @@ func (b *beeb) onKey(ev *fyne.KeyEvent) {
 			line.Text = ">" + text[:len(text)-1]
 			canvas.Refresh(line)
 		}
+	case fyne.KeyEscape:
+		text := b.content[b.current].(*canvas.Text)
+		if len(text.Text) == 0 || text.Text[0] != '>' {
+			break
+		}
+
+		b.nextAuto = 0
+		text.Text = ">"
+		canvas.Refresh(text)
 	}
 }
 
