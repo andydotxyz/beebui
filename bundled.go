@@ -1,6 +1,6 @@
 package beebui
 
-import "fyne.io/fyne"
+import "fyne.io/fyne/v2"
 
 var monitor = &fyne.StaticResource{
 	StaticName: "monitor.png",

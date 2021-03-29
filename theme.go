@@ -3,8 +3,8 @@ package beebui
 import (
 	"image/color"
 
-	"fyne.io/fyne"
-	"fyne.io/fyne/theme"
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/theme"
 )
 
 type beebTheme struct{}

@@ -1,8 +1,8 @@
 module github.com/andydotxyz/beebui
 
-go 1.16
+go 1.14
 
 require (
-	fyne.io/fyne v1.4.3
-	github.com/skx/gobasic v0.0.0-20201001073714-267f6777267c
+	fyne.io/fyne/v2 v2.0.1
+	github.com/skx/gobasic v0.0.0-20190824081213-908ed62a15b1
 )

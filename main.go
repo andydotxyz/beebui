@@ -8,17 +8,18 @@ import (
 	"strings"
 	"time"
 
-	"fyne.io/fyne"
-	"fyne.io/fyne/canvas"
-	"fyne.io/fyne/driver/desktop"
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/driver/desktop"
+	"fyne.io/fyne/v2/theme"
 
 	"github.com/skx/gobasic/eval"
 	"github.com/skx/gobasic/tokenizer"
 )
 
 const (
-	screenInsetX = 130
-	screenInsetY = 62
+	screenInsetX = float32(130)
+	screenInsetY = float32(62)
 
 	screenLines = 25
 	screenCols  = 40
@@ -256,7 +257,7 @@ func (b *beeb) runProg(prog string) {
 // Show starts a new beeb computer simulator
 func Show(app fyne.App) {
 	b := beeb{}
-	app.Settings().SetTheme(&beebTheme{})
+	app.Settings().SetTheme(theme.FromLegacy(&beebTheme{}))
 
 	window := app.NewWindow("BBC Emulator")
 	window.SetContent(b.loadUI())

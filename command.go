@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"fyne.io/fyne"
-	"fyne.io/fyne/canvas"
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 
 	"github.com/skx/gobasic/builtin"
 	"github.com/skx/gobasic/object"
