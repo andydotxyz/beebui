@@ -10,6 +10,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/theme"
 
@@ -95,7 +96,7 @@ func (b *beeb) loadUI() fyne.CanvasObject {
 	}
 
 	b.overlay = canvas.NewImageFromResource(monitor)
-	return fyne.NewContainerWithLayout(b, append(b.content, b.overlay)...)
+	return container.New(b, append(b.content, b.overlay)...)
 }
 
 func (b *beeb) appendLine(line string) {
@@ -239,14 +240,15 @@ func (b *beeb) onKey(ev *fyne.KeyEvent) {
 func (b *beeb) runProg(prog string) {
 	t := tokenizer.New(prog)
 	e, err := eval.New(t)
-	e.STDIN = bufio.NewReaderSize(b, screenCols)
-	e.STDOUT = bufio.NewWriterSize(b, screenCols)
-	e.STDERR = e.STDOUT
-	e.LINEEND = "\n"
-	e.RegisterBuiltin("CLS", 0, b.CLS)
 	if err != nil {
 		fmt.Println("Error parsing program", err)
 	} else {
+		e.STDIN = bufio.NewReaderSize(b, screenCols)
+		e.STDOUT = bufio.NewWriterSize(b, screenCols)
+		e.STDERR = e.STDOUT
+		e.LINEEND = "\n"
+		e.RegisterBuiltin("CLS", 0, b.CLS)
+
 		err = e.Run()
 		if err != nil {
 			fmt.Println("Error running program", err)
