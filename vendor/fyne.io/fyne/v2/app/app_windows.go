@@ -1,6 +1,5 @@
-// +build !ci
-
-// +build !android,!ios
+//go:build !ci && !js && !android && !ios && !wasm && !test_web_driver
+// +build !ci,!js,!android,!ios,!wasm,!test_web_driver
 
 package app
 
@@ -9,7 +8,6 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"syscall"
@@ -18,6 +16,8 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
+
+	"golang.org/x/sys/execabs"
 )
 
 const notificationTemplate = `$title = "%s"
@@ -32,7 +32,7 @@ $toastXml.GetElementsByTagName("text")[1].AppendChild($toastXml.CreateTextNode($
 $xml = New-Object Windows.Data.Xml.Dom.XmlDocument
 $xml.LoadXml($toastXml.OuterXml)
 $toast = [Windows.UI.Notifications.ToastNotification]::new($xml)
-[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("appID").Show($toast);`
+[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("%s").Show($toast);`
 
 func isDark() bool {
 	k, err := registry.OpenKey(registry.CURRENT_USER, `SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize`, registry.QUERY_VALUE)
@@ -63,20 +63,36 @@ func rootConfigDir() string {
 	return filepath.Join(desktopConfig, "fyne")
 }
 
-func (app *fyneApp) OpenURL(url *url.URL) error {
-	cmd := app.exec("rundll32", "url.dll,FileProtocolHandler", url.String())
+func (a *fyneApp) OpenURL(url *url.URL) error {
+	cmd := a.exec("rundll32", "url.dll,FileProtocolHandler", url.String())
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
 	return cmd.Run()
 }
 
 var scriptNum = 0
 
-func (app *fyneApp) SendNotification(n *fyne.Notification) {
+func (a *fyneApp) SendNotification(n *fyne.Notification) {
 	title := escapeNotificationString(n.Title)
 	content := escapeNotificationString(n.Content)
+	appID := a.UniqueID()
+	if appID == "" || strings.Index(appID, "missing-id") == 0 {
+		appID = a.Metadata().Name
+	}
 
-	script := fmt.Sprintf(notificationTemplate, title, content)
+	script := fmt.Sprintf(notificationTemplate, title, content, appID)
 	go runScript("notify", script)
+}
+
+// SetSystemTrayMenu creates a system tray item and attaches the specified menu.
+// By default this will use the application icon.
+func (a *fyneApp) SetSystemTrayMenu(menu *fyne.Menu) {
+	a.Driver().(systrayDriver).SetSystemTrayMenu(menu)
+}
+
+// SetSystemTrayIcon sets a custom image for the system tray icon.
+// You should have previously called `SetSystemTrayMenu` to initialise the menu icon.
+func (a *fyneApp) SetSystemTrayIcon(icon fyne.Resource) {
+	a.Driver().(systrayDriver).SetSystemTrayIcon(icon)
 }
 
 func escapeNotificationString(in string) string {
@@ -98,7 +114,7 @@ func runScript(name, script string) {
 	defer os.Remove(tmpFilePath)
 
 	launch := "(Get-Content -Encoding UTF8 -Path " + tmpFilePath + " -Raw) | Invoke-Expression"
-	cmd := exec.Command("PowerShell", "-ExecutionPolicy", "Bypass", launch)
+	cmd := execabs.Command("PowerShell", "-ExecutionPolicy", "Bypass", launch)
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	err = cmd.Run()
 	if err != nil {
